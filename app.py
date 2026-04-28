@@ -68,7 +68,7 @@ def upload():
         # 🔥 CLEAN ALL NUMERIC DATA
         for col in df.columns:
             df[col] = df[col].astype(str).str.replace(r'[^\d.]', '', regex=True)
-            df[col] = pd.to_numeric(df[col], errors='ignore')
+            df[col] = pd.to_numeric(df[col], errors='coerce')
 
         df = df.dropna()
 
@@ -102,6 +102,8 @@ def upload():
             predictions.append(result)
 
         df['Predicted_Sales'] = predictions
+        df['Predicted_Sales'] = df['Predicted_Sales'].fillna(0)
+        df = df.replace([float('inf'), -float('inf')], 0)
 
         # 🔥 HISTORY SAVE SAFE
         conn = get_db()
@@ -120,18 +122,17 @@ def upload():
 
         # 🔥 FINAL OUTPUT SAFE
         return render_template(
-            'dashboard.html',
-            total_rows=len(df),
-            avg_sales=round(df['Predicted_Sales'].mean(), 2),
-            max_sales=int(df['Predicted_Sales'].max()),
+    'dashboard.html',
+    total_rows=len(df),
 
-            prices=df[x_col].tolist(),
-            sales=df['Predicted_Sales'].tolist(),
-            titles=df.get('productTitle', df.index).tolist(),
+    avg_sales=round(df['Predicted_Sales'].fillna(0).mean(), 2),
+    max_sales=int(df['Predicted_Sales'].fillna(0).max()),
 
-            x_label=x_col,
-            y_label="Predicted Sales"
-        )
+    prices=df[price_col].fillna(0).tolist(),
+    sales=df['Predicted_Sales'].tolist(),
+
+    titles=df.get('productTitle', df.index).tolist()
+)     
 
     return render_template('upload.html')
 
