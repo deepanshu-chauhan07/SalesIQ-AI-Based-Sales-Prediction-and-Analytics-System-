@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Upload CSV</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Animated background */
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(-45deg, #0f0f0f, #1a0000, #330000, #000);
+    background-size: 400% 400%;
+    animation: bgMove 10s ease infinite;
+    overflow: hidden;
+}
+
+@keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Floating words */
+.floating-bg span {
+    position: absolute;
+    font-size: 45px;
+    color: rgba(255,0,0,0.12);
+    animation: float 12s infinite ease-in-out;
+}
+
+@keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-40px); }
+}
+
+/* Glass card */
+.card {
+    position: relative;
+    z-index: 2;
+    width: 420px;
+    padding: 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(25px);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,0,0,0.2);
+    box-shadow: 0 0 40px rgba(255,0,0,0.3);
+    text-align: center;
+    animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; }
+}
+
+h2 {
+    color: white;
+    margin-bottom: 20px;
+}
+
+/* Upload box */
+.upload-box {
+    border: 2px dashed rgba(255,0,0,0.4);
+    padding: 30px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+    color: #aaa;
+}
+
+.upload-box:hover {
+    background: rgba(255,0,0,0.1);
+    border-color: red;
+}
+
+/* Hide input */
+input[type="file"] {
+    display: none;
+}
+
+/* Button */
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(45deg, red, #ff1a1a);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px red;
+}
+
+/* Back link */
+.back {
+    margin-top: 15px;
+}
+
+a {
+    color: #ff4d4d;
+    text-decoration: none;
+}
+
+/* Floating words positions */
+.floating-bg span:nth-child(1){ top:10%; left:10%; }
+.floating-bg span:nth-child(2){ top:30%; left:70%; }
+.floating-bg span:nth-child(3){ top:60%; left:20%; }
+.floating-bg span:nth-child(4){ top:80%; left:60%; }
+
+</style>
+</head>
+
+<body>
+
+<!-- Floating background -->
+<div class="floating-bg">
+    <span>UPLOAD</span>
+    <span>DATA</span>
+    <span>AI</span>
+    <span>PREDICT</span>
+</div>
+
+<!-- Card -->
+<div class="card">
+    <h2>📂 Upload CSV File</h2>
+
+    <form method="post" enctype="multipart/form-data">
+
+        <label class="upload-box">
+             Click to select CSV file
+            <input type="file" name="file" required>
+        </label>
+
+        <button type="submit">Upload & Predict 🚀</button>
+
+    </form>
+
+    <div class="back">
+        <a href="/home">⬅ Back</a>
+    </div>
+</div>
+
+</body>
+</html>

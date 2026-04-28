@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Animated Gradient Background */
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(-45deg, #0f0f0f, #1a0000, #330000, #000);
+    background-size: 400% 400%;
+    animation: bgMove 10s ease infinite;
+    overflow: hidden;
+}
+
+@keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Floating Text Background */
+.floating-bg span {
+    position: absolute;
+    font-size: 50px;
+    font-weight: bold;
+    color: rgba(255, 0, 0, 0.15);
+    animation: float 12s ease-in-out infinite;
+}
+
+.floating-bg span:nth-child(1) { top: 10%; left: 10%; }
+.floating-bg span:nth-child(2) { top: 30%; left: 70%; }
+.floating-bg span:nth-child(3) { top: 60%; left: 20%; }
+.floating-bg span:nth-child(4) { top: 80%; left: 60%; }
+.floating-bg span:nth-child(5) { top: 50%; left: 40%; }
+.floating-bg span:nth-child(6) { top: 20%; left: 80%; }
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-40px); }
+    100% { transform: translateY(0); }
+}
+
+/* Glass Card */
+.card {
+    position: relative;
+    z-index: 2;
+    width: 380px;
+    padding: 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(25px);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,0,0,0.2);
+    box-shadow: 0 0 40px rgba(255,0,0,0.3);
+    animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1;}
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+/* Inputs */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transition: 0.3s;
+}
+
+/* Neon Glow on focus */
+input:focus {
+    box-shadow: 0 0 10px red;
+    background: rgba(255,255,255,0.15);
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(45deg, red, #ff1a1a);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px red;
+}
+
+/* Link */
+.link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+a {
+    color: #ff4d4d;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Floating Words -->
+<div class="floating-bg">
+    <span>REGISTER</span>
+    <span>WELCOME</span>
+    <span>AI</span>
+    <span>DATA</span>
+    <span>SALES</span>
+    <span>FUTURE</span>
+</div>
+
+<!-- Glass Card -->
+<div class="card">
+    <h2>🚀 Create Account</h2>
+
+    <form method="post">
+        <input type="text" name="first_name" placeholder="First Name" required>
+        <input type="text" name="last_name" placeholder="Last Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <div class="link">
+        <p>Already have an account? <a href="/login">Login</a></p>
+    </div>
+</div>
+
+</body>
+</html>

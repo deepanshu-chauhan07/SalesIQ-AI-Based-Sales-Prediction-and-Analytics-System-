@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Sales Predictor</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: #0a0a0a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+}
+
+/* ── Background floating text ── */
+#bg-text-layer {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bg-word {
+    position: absolute;
+    font-size: clamp(14px, 3vw, 28px);
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: rgba(180, 0, 0, 0.12);
+    white-space: nowrap;
+    text-transform: uppercase;
+    animation: driftWord linear infinite;
+    user-select: none;
+}
+
+@keyframes driftWord {
+    0%   { transform: translateY(110vh) rotate(var(--rot)); opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { transform: translateY(-20vh) rotate(var(--rot)); opacity: 0; }
+}
+
+/* ── Floating bubbles ── */
+#bg-bubbles {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(180, 20, 20, 0.1);
+    animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+    0%   { transform: translateY(0) scale(1); opacity: 0.6; }
+    100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
+}
+
+/* ── Ticker ── */
+#ticker-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    background: rgba(160, 10, 10, 0.85);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+}
+
+#ticker {
+    white-space: nowrap;
+    animation: ticker 22s linear infinite;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding-left: 100%;
+}
+
+@keyframes ticker {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* ── Glass card ── */
+.container {
+    position: relative;
+    z-index: 5;
+    background: rgba(15, 5, 5, 0.82);
+    backdrop-filter: blur(18px);
+    border: 0.5px solid rgba(200, 30, 30, 0.35);
+    border-radius: 20px;
+    width: 440px;
+    color: #fff;
+    box-shadow: 0 0 60px rgba(180,0,0,0.2), 0 20px 60px rgba(0,0,0,0.6);
+    animation: fadeIn 0.8s ease forwards;
+    overflow: hidden;
+    margin-top: 32px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-inner {
+    padding: 28px 28px 24px;
+}
+
+/* ── Header ── */
+.header {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.header .eyebrow {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #c00;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.header h2 {
+    font-size: 22px;
+    font-weight: 500;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.header-bar {
+    width: 40px;
+    height: 2px;
+    background: #c00;
+    margin: 0 auto;
+}
+
+/* ── Form ── */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.field label {
+    font-size: 10px;
+    color: #777;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.field input,
+.field select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 0.5px solid rgba(200,30,30,0.35);
+    border-radius: 8px;
+    color: #fff;
+    padding: 9px 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.field input:focus,
+.field select:focus {
+    border-color: rgba(200,30,30,0.75);
+}
+
+.field select option {
+    background: #1a1a1a;
+}
+
+/* ── Checkboxes ── */
+.checks {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 14px;
+}
+
+.checks label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: #ccc;
+    cursor: pointer;
+}
+
+.checks input[type="checkbox"] {
+    accent-color: #c00;
+    width: 15px;
+    height: 15px;
+}
+
+/* ── Button ── */
+#pred-btn {
+    width: 100%;
+    padding: 12px;
+    background: #c00;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: transform 0.15s, filter 0.15s;
+    animation: pulseRing 2s infinite;
+}
+
+@keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0 rgba(220,50,50,0.5); }
+    70%  { box-shadow: 0 0 0 12px rgba(220,50,50,0); }
+    100% { box-shadow: 0 0 0 0 rgba(220,50,50,0); }
+}
+
+#pred-btn:hover  { filter: brightness(1.15); transform: scale(1.02); }
+#pred-btn:active { transform: scale(0.98); }
+
+/* ── Results ── */
+#result-section {
+    display: none;
+    animation: slideUp 0.5s ease forwards;
+    border-top: 0.5px solid rgba(200,30,30,0.25);
+    padding-top: 18px;
+    margin-top: 18px;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.metric-card {
+    background: rgba(200,30,30,0.1);
+    border: 0.5px solid rgba(200,30,30,0.3);
+    border-radius: 8px;
+    padding: 12px 8px;
+    text-align: center;
+}
+
+.metric-card .m-label {
+    font-size: 9px;
+    color: #777;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.metric-card .m-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #ff4444;
+}
+
+#r-product-name {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+/* ── Bars ── */
+.bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.bar-label {
+    font-size: 11px;
+    color: #777;
+    min-width: 115px;
+}
+
+.bar-track {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    height: 7px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8b0000, #ff4444);
+    border-radius: 4px;
+    width: 0;
+    transition: width 0.9s cubic-bezier(.4,0,.2,1);
+}
+
+.bar-pct {
+    font-size: 11px;
+    color: #ff4444;
+    min-width: 30px;
+    text-align: right;
+}
+
+/* ── Verdict ── */
+#r-verdict {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* ── Dark mode toggle ── */
+.toggle {
+    text-align: right;
+    cursor: pointer;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 8px;
+    transition: color 0.2s;
+}
+.toggle:hover { color: #c00; }
+.footer {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    padding: 8px 18px;
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 0.5px solid rgba(255, 0, 0, 0.3);
+
+    color: #aaa;
+    font-size: 13px;
+    letter-spacing: 1px;
+
+    box-shadow: 0 0 20px rgba(255,0,0,0.15);
+
+    animation: floatFooter 3s ease-in-out infinite;
+}
+
+/* name highlight */
+.footer .name {
+    color: #ff4444;
+    font-weight: 500;
+}
+
+/* floating animation */
+@keyframes floatFooter {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, -5px); }
+}
+</style>
+</head>
+<body>
+
+<!-- Background floating text -->
+<div id="bg-text-layer"></div>
+
+<!-- Background bubbles -->
+<div id="bg-bubbles"></div>
+
+<!-- Live ticker -->
+<div id="ticker-wrap">
+    <div id="ticker">
+        📈 LAPTOP PRO X → +42% SURGE &nbsp;&nbsp;&nbsp;
+        🔥 SMARTWATCH ULTRA → SOLD OUT &nbsp;&nbsp;&nbsp;
+        💡 EARBUDS MAX → HIGH DEMAND &nbsp;&nbsp;&nbsp;
+        🛋️ AI PREDICTOR LIVE &nbsp;&nbsp;&nbsp;
+        📊 SALES SURGE DETECTED &nbsp;&nbsp;&nbsp;
+        💰 REVENUE OPPORTUNITY ALERT &nbsp;&nbsp;&nbsp;
+        🚀 BEST SELLER SIGNAL ACTIVE &nbsp;&nbsp;&nbsp;
+    </div>
+</div>
+
+<!-- Main card -->
+<div class="container">
+    <div class="card-inner">
+        <div class="toggle" onclick="toggleMode()">🌙 Toggle Mode</div>
+
+        <div class="header">
+            <div class="eyebrow">Live Intelligence</div>
+            <h2>🛋️ AI Sales Predictor</h2>
+            <div class="header-bar"></div>
+        </div>
+
+        <form id="sales-form" onsubmit="runPrediction(event)">
+            <!-- 👇 ADD THIS LINE HERE -->
+<div style="text-align:center; margin-bottom:15px;">
+  <a href="/upload" style="
+    padding:10px 18px;
+    border-radius:10px;
+    background:linear-gradient(45deg, red, #ff1a1a);
+    box-shadow:0 0 15px red;
+    color:white;
+    text-decoration:none;
+    font-size:13px;
+">
+    📂 Upload CSV
+</a>
+</div>
+
+<form id="sales-form" onsubmit="runPrediction(event)">
+            <div class="form-grid">
+                <div class="field" style="grid-column: span 2;">
+                    <label>Product Title</label>
+                    <input type="text" id="f-title" placeholder="e.g. Laptop Pro X" required>
+                </div>
+                <div class="field">
+                    <label>Original Price</label>
+                    <input type="number" id="f-orig" placeholder="e.g. 1200" required>
+                </div>
+                <div class="field">
+                    <label>Sale Price</label>
+                    <input type="number" id="f-price" placeholder="e.g. 899" required>
+                </div>
+                <div class="field">
+                    <label>Discount %</label>
+                    <input type="number" id="f-disc" placeholder="e.g. 25" required>
+                </div>
+                <div class="field">
+                    <label>Market Bucket</label>
+                    <select id="f-bucket">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="checks">
+                <label><input type="checkbox" id="f-ship"> Free Shipping</label>
+                <label><input type="checkbox" id="f-best"> Best Seller</label>
+            </div>
+
+            <button type="submit" id="pred-btn">PREDICT 🚀</button>
+        </form>
+
+        <div id="result-section">
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="m-label">Units / Day</div>
+                    <div class="m-value" id="r-units">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="m-label">Revenue / Mo</div>
+                    <div class="m-value" id="r-rev">—</div>
+                </div>
+                <div class="metric-card">
+                    <div class="m-label">Demand</div>
+                    <div class="m-value" id="r-demand">—</div>
+                </div>
+            </div>
+
+            <div id="r-product-name"></div>
+            <div id="chart-bars"></div>
+            <div id="r-verdict"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ── Background floating words ── */
+const words = [
+    'SALES', 'PREDICT', 'REVENUE', 'AI', 'LIVE', 'DEMAND',
+    'GROWTH', 'BOOST', 'PROFIT', 'TREND', 'MARKET', 'SURGE',
+    'LAUNCH', 'BEST', 'SELLER', 'DATA', 'SMART', 'ANALYTICS',
+    'PRICE', 'VALUE', 'WIN', 'HOT', 'TOP', 'FORECAST'
+];
+
+const bgLayer = document.getElementById('bg-text-layer');
+
+function spawnWord() {
+    const el = document.createElement('div');
+    el.className = 'bg-word';
+    el.textContent = words[Math.floor(Math.random() * words.length)];
+    const rot = (Math.random() - 0.5) * 30;
+    const dur = 10 + Math.random() * 14;
+    el.style.cssText = `
+        left: ${Math.random() * 95}%;
+        --rot: ${rot}deg;
+        animation-duration: ${dur}s;
+        animation-delay: ${Math.random() * 6}s;
+        font-size: ${16 + Math.random() * 24}px;
+        opacity: 0;
+    `;
+    bgLayer.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 6) * 1000);
+}
+
+// Spawn words continuously
+setInterval(spawnWord, 700);
+for (let i = 0; i < 10; i++) spawnWord();
+
+/* ── Background bubbles ── */
+const bubblesEl = document.getElementById('bg-bubbles');
+for (let i = 0; i < 18; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 20 + Math.random() * 70;
+    b.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        left: ${Math.random() * 100}%;
+        bottom: -80px;
+        animation-duration: ${7 + Math.random() * 9}s;
+        animation-delay: ${Math.random() * 9}s;
+    `;
+    bubblesEl.appendChild(b);
+}
+
+/* ── Dark/light toggle ── */
+let darkMode = true;
+function toggleMode() {
+    darkMode = !darkMode;
+    document.body.style.background = darkMode ? '#0a0a0a' : '#f5e8e8';
+}
+
+/* ── Prediction logic ── */
+function runPrediction(e) {
+    e.preventDefault();
+
+    const title  = document.getElementById('f-title').value || 'Product';
+    const orig   = parseFloat(document.getElementById('f-orig').value)  || 1000;
+    const price  = parseFloat(document.getElementById('f-price').value) || 800;
+    const disc   = parseFloat(document.getElementById('f-disc').value)  || 20;
+    const bucket = document.getElementById('f-bucket').value;
+    const shipping = document.getElementById('f-ship').checked;
+    const best     = document.getElementById('f-best').checked;
+
+    const bucketMult = { Low: 1, Medium: 2.2, High: 4.1 }[bucket];
+    let score = (disc / 100) * 60 + bucketMult * 10;
+    if (shipping) score += 12;
+    if (best)     score += 18;
+    score = Math.min(score, 98);
+
+    const units   = Math.round(2 + (score / 100) * 48);
+    const revenue = Math.round(units * 30 * price);
+    const demandLevels = ['Low', 'Medium', 'High', 'Very High'];
+    const demand  = demandLevels[Math.min(3, Math.floor(score / 25))];
+
+    document.getElementById('r-units').textContent  = units;
+    document.getElementById('r-rev').textContent    = '₹' + revenue.toLocaleString();
+    document.getElementById('r-demand').textContent = demand;
+    document.getElementById('r-product-name').textContent = 'Prediction for: ' + title;
+
+    const barDefs = [
+        { label: 'Discount impact',  val: Math.min(100, disc * 2.5) },
+        { label: 'Market demand',    val: Math.min(100, bucketMult * 24) },
+        { label: 'Shipping boost',   val: shipping ? 80 : 10 },
+        { label: 'Bestseller signal',val: best     ? 90 : 15 },
+        { label: 'Overall score',    val: score },
+    ];
+
+    const bc = document.getElementById('chart-bars');
+    bc.innerHTML = '';
+    barDefs.forEach(b => {
+        const pct = Math.round(b.val);
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        row.innerHTML = `
+            <span class="bar-label">${b.label}</span>
+            <div class="bar-track">
+                <div class="bar-fill" data-pct="${pct}"></div>
+            </div>
+            <span class="bar-pct">${pct}%</span>
+        `;
+        bc.appendChild(row);
+    });
+
+    // Animate bars after DOM insert
+    requestAnimationFrame(() => {
+        document.querySelectorAll('.bar-fill').forEach(el => {
+            el.style.width = el.dataset.pct + '%';
+        });
+    });
+
+    // Verdict
+    const verdict = document.getElementById('r-verdict');
+    if (score >= 70) {
+        verdict.style.cssText = 'margin-top:14px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;text-align:center;background:rgba(200,30,30,0.2);color:#ff6666;border:0.5px solid rgba(200,30,30,0.5);';
+        verdict.textContent = '🔥 Strong sales potential — launch recommended';
+    } else if (score >= 40) {
+        verdict.style.cssText = 'margin-top:14px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;text-align:center;background:rgba(150,100,0,0.15);color:#e6a020;border:0.5px solid rgba(150,100,0,0.4);';
+        verdict.textContent = '⚡ Moderate potential — boost discount or add free shipping';
+    } else {
+        verdict.style.cssText = 'margin-top:14px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;text-align:center;background:rgba(80,80,80,0.15);color:#888;border:0.5px solid rgba(120,120,120,0.3);';
+        verdict.textContent = '📉 Low potential — revise your pricing strategy';
+    }
+
+    const rs = document.getElementById('result-section');
+    rs.style.display = 'block';
+    rs.style.animation = 'none';
+    void rs.offsetWidth;
+    rs.style.animation = 'slideUp 0.5s ease forwards';
+    
+}
+{% if error %}
+<p style="color:red; text-align:center;">{{ error }}</p>
+{% endif %}
+ 
+</script>
+<div class="footer">
+    ✨ Made by <span class="name">Deepanshu Singh Chauhan</span> 🚀
+</div>
+</body>
+</html>

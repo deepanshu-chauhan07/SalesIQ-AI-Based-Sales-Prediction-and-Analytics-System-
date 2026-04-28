@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: 'Segoe UI';
+    background: #0f0f0f;
+    color: white;
+    padding: 20px;
+}
+
+/* KPI Cards */
+.kpi-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.kpi {
+    flex: 1;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    box-shadow: 0 0 15px rgba(255,0,0,0.3);
+}
+
+.kpi h3 {
+    margin-bottom: 10px;
+}
+
+/* Search */
+input {
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    text-align: center;
+}
+
+th {
+    cursor: pointer;
+    background: rgba(255,0,0,0.2);
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 15px;
+    background: red;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+/* Chart */
+canvas {
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📊 Analytics Dashboard</h2>
+
+<!-- KPI CARDS -->
+<div class="kpi-container">
+    <div class="kpi">
+        <h3>Total Rows</h3>
+        <p id="total"></p>
+    </div>
+    <div class="kpi">
+        <h3>Avg Sales</h3>
+        <p id="avg"></p>
+    </div>
+    <div class="kpi">
+        <h3>Max Sales</h3>
+        <p id="max"></p>
+    </div>
+</div>
+
+<!-- SEARCH -->
+<input type="text" id="search" placeholder="Search..." onkeyup="searchTable()">
+
+<!-- TABLE -->
+<div>
+    {{ tables|safe }}
+</div>
+
+<!-- CHART -->
+<canvas id="chart"></canvas>
+
+<br>
+<a href="/download" class="btn">⬇ Download CSV</a>
+<a href="/upload" class="btn">📂 Upload Again</a>
+
+<script>
+// Get table data
+let table = document.querySelector("table");
+let rows = table.rows;
+
+let sales = [];
+
+// Extract sales column (last column)
+for (let i = 1; i < rows.length; i++) {
+    let val = parseFloat(rows[i].cells[rows[i].cells.length - 1].innerText);
+    sales.push(val);
+}
+
+// KPI
+document.getElementById("total").innerText = sales.length;
+document.getElementById("avg").innerText = 
+    (sales.reduce((a,b)=>a+b,0)/sales.length).toFixed(2);
+document.getElementById("max").innerText = Math.max(...sales);
+
+// SEARCH
+function searchTable() {
+    let input = document.getElementById("search").value.toLowerCase();
+
+    for (let i = 1; i < rows.length; i++) {
+        let text = rows[i].innerText.toLowerCase();
+        rows[i].style.display = text.includes(input) ? "" : "none";
+    }
+}
+
+// CHART
+new Chart(document.getElementById("chart"), {
+    type: 'bar',
+    data: {
+        labels: sales.map((_, i) => i + 1),
+        datasets: [{
+            label: 'Predicted Sales',
+            data: sales
+        }]
+    }
+});
+</script>
+
+</body>
+</html>
