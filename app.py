@@ -60,70 +60,79 @@ def upload():
         if not file:
             return "No file uploaded"
 
-        df = pd.read_csv(file)
+        try:
+            df = pd.read_csv(file)
+        except:
+            return "Invalid CSV file"
 
-        # 🔥 CLEAN FULL DATAFRAME
-        if 'price' in df.columns:
-            df['price'] = df['price'].apply(clean_number)
+        # 🔥 CLEAN ALL NUMERIC DATA
+        for col in df.columns:
+            df[col] = df[col].astype(str).str.replace(r'[^\d.]', '', regex=True)
+            df[col] = pd.to_numeric(df[col], errors='ignore')
 
-        if 'originalPrice' in df.columns:
-            df['originalPrice'] = df['originalPrice'].apply(clean_number)
+        df = df.dropna()
 
-        # 👉 choose correct column
-        price_col = 'price' if 'price' in df.columns else 'originalPrice'
+        # 🔥 SAFE COLUMN DETECTION
+        numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+
+        if len(numeric_cols) < 2:
+            return "CSV must contain at least 2 numeric columns"
+
+        x_col = numeric_cols[0]
+        y_col = numeric_cols[1]
 
         predictions = []
 
         for _, row in df.iterrows():
             data = {
                 "productTitle": safe_get(row, ['productTitle','title','name'], 'unknown'),
-                "originalPrice": clean_number(safe_get(row, ['originalPrice','mrp'], 100)),
-                "price": clean_number(safe_get(row, ['price','selling_price'], 50)),
+                "originalPrice": clean_number(safe_get(row, ['originalPrice','mrp', x_col], 100)),
+                "price": clean_number(safe_get(row, ['price','selling_price', x_col], 50)),
                 "discount_percentage": clean_number(safe_get(row, ['discount'], 10)),
-                "price_bucket": safe_get(row, ['price_bucket'], 'Low'),
-                "has_free_shipping": 1 if str(safe_get(row, ['shipping','free_shipping'], 0)).lower() in ['1','yes','true'] else 0,
-                "is_best_seller": 1 if str(safe_get(row, ['bestseller'], 0)).lower() in ['1','yes','true'] else 0,
+                "price_bucket": "Low",
+                "has_free_shipping": 0,
+                "is_best_seller": 0,
             }
 
             try:
                 result = int(predict(model, data))
             except:
-                result = 0
+                result = int(row[y_col]) if y_col in row else 0
 
             predictions.append(result)
 
         df['Predicted_Sales'] = predictions
-        # 🔥 SAVE HISTORY
+
+        # 🔥 HISTORY SAVE SAFE
         conn = get_db()
         cursor = conn.cursor()
 
         cursor.execute("""
-INSERT INTO history (username, total_rows, avg_sales)
-VALUES (?, ?, ?)
-""", (session['user'], len(df), round(df['Predicted_Sales'].mean(), 2)))
- 
+        INSERT INTO history (username, total_rows, avg_sales)
+        VALUES (?, ?, ?)
+        """, (session['user'], len(df), round(df['Predicted_Sales'].mean(), 2)))
+
         conn.commit()
         conn.close()
 
-        # Save globally for download
         global last_df
         last_df = df
 
-        # 🔥 SAFE CALCULATIONS
-        min_price = float(df[price_col].min())
-        max_price = float(df[price_col].max())
-
+        # 🔥 FINAL OUTPUT SAFE
         return render_template(
-    'dashboard.html',
-    total_rows=len(df),
-    avg_sales=round(df['Predicted_Sales'].mean(),2),
-    max_sales=int(df['Predicted_Sales'].max()),
+            'dashboard.html',
+            total_rows=len(df),
+            avg_sales=round(df['Predicted_Sales'].mean(), 2),
+            max_sales=int(df['Predicted_Sales'].max()),
 
-    prices=df[price_col].tolist(),
-    sales=df['Predicted_Sales'].tolist(),
-    titles=df['productTitle'].fillna("Unknown").tolist()
-)
-       
+            prices=df[x_col].tolist(),
+            sales=df['Predicted_Sales'].tolist(),
+            titles=df.get('productTitle', df.index).tolist(),
+
+            x_label=x_col,
+            y_label="Predicted Sales"
+        )
+
     return render_template('upload.html')
 
 # ================= DOWNLOAD =================
