@@ -6,11 +6,31 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+import pickle
 
-pickle.dump(model, open("model.pkl", "wb"))
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
 
 def train_model():
     df = pd.read_csv("furniture_data.csv")
+
+    # 🔥 CLEAN PRICE COLUMN
+    df["price"] = df["price"].replace(r'[\$,]', '', regex=True).astype(float)
+    df["originalPrice"] = df["originalPrice"].replace(r'[\$,]', '', regex=True).astype(float)
+
+    # अगर sold भी string हो
+    df["sold"] = df["sold"].astype(float)
+
+    # Features
+    X = df[["price", "originalPrice"]]
+    y = df["sold"]
+
+    model = RandomForestRegressor()
+    model.fit(X, y)
+
+    return model
 
     # --- CLEANING ---
     def clean_currency(x):
