@@ -5,6 +5,9 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
+import pickle
+
+pickle.dump(model, open("model.pkl", "wb"))
 
 def train_model():
     df = pd.read_csv("furniture_data.csv")

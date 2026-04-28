@@ -6,13 +6,17 @@ import pandas as pd
 import io
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
+import os
+import pickle
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-# Load ML model
-model = train_model()
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Load model
+model = pickle.load(open("model.pkl", "rb"))
 # ================= HELPERS =================
 def clean_number(val):
     if val is None:
