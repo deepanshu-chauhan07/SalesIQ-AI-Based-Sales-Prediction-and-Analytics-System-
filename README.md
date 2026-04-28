@@ -105,4 +105,8 @@ Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
 ---
 
+<<<<<<< HEAD
 ## ⭐ If you like this project, give it a star!
+=======
+## ⭐ If you like this project, give it a star!
+>>>>>>> deb6d82c4ad1f61872c1a20007241dd9c292a77d
