@@ -238,11 +238,19 @@ def upload():
         df = normalise_columns(df)
         df = infer_and_cast_types(df)
 
-        # ── 3. Predict ─────────────────────────────────────────────────────────
-        df["Predicted_Sales"] = [
-            safe_predict(row, idx) for idx, row in df.iterrows()
-        ]
 
+        # Batch prediction — sab rows ek saath predict hongi (fast)
+        try:
+           from model import build_feature_row
+           feature_rows = [build_feature_row(extract_features(row)) for _, row in df.iterrows()]
+           X_batch = pd.concat(feature_rows, ignore_index=True)
+           df["Predicted_Sales"] = model.predict(X_batch).astype(int)
+           logger.info("Batch prediction successful.")
+        except Exception as e:
+           logger.error("Batch prediction failed, falling back: %s", e)
+           df["Predicted_Sales"] = [
+               safe_predict(row, idx) for idx, row in df.iterrows()
+    ]
         nonzero = (df["Predicted_Sales"] != 0).sum()
         logger.info(
             "Predictions complete — %d/%d rows with non-zero sales.",
