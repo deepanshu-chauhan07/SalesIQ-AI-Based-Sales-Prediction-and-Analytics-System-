@@ -1,73 +1,65 @@
 import pandas as pd
 import numpy as np
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
-import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-import pickle
-
-import pandas as pd
+import logging
 from sklearn.ensemble import RandomForestRegressor
 
-def train_model():
-    df = pd.read_csv("furniture_data.csv")
+logger = logging.getLogger(__name__)
 
-    # 🔥 CLEAN PRICE COLUMN
-    df["price"] = df["price"].replace(r'[\$,]', '', regex=True).astype(float)
-    df["originalPrice"] = df["originalPrice"].replace(r'[\$,]', '', regex=True).astype(float)
+FEATURE_COLUMNS = [
+    "originalPrice",
+    "price",
+    "discount_percentage",
+    "has_free_shipping",
+    "is_best_seller",
+    "price_bucket_encoded",
+]
 
-    # अगर sold भी string हो
-    df["sold"] = df["sold"].astype(float)
-
-    # Features
-    X = df[["price", "originalPrice"]]
-    y = df["sold"]
-
-    model = RandomForestRegressor()
-    model.fit(X, y)
-
-    return model
-
-    # --- CLEANING ---
-    def clean_currency(x):
-        if pd.isna(x): return np.nan
-        return float(str(x).replace('$','').replace(',',''))
-
-    df['price'] = df['price'].apply(clean_currency)
-    df['originalPrice'] = df['originalPrice'].apply(clean_currency)
-
-    df['tagText'] = df['tagText'].fillna("none").str.lower()
-    df['productTitle'] = df['productTitle'].fillna("unknown")
-
-    # --- FEATURE ENGINEERING ---
-    df['discount_percentage'] = ((df['originalPrice'] - df['price']) / df['originalPrice']) * 100
-    df['has_free_shipping'] = df['tagText'].str.contains('free shipping').astype(int)
-    df['is_best_seller'] = df['tagText'].str.contains('best seller').astype(int)
-    df['price_bucket'] = pd.qcut(df['price'], 3, labels=['Low','Medium','High'])
-
-    X = df[['productTitle','originalPrice','price','discount_percentage','price_bucket','has_free_shipping','is_best_seller']]
-    y = df['sold']
-
-    # --- PIPELINE ---
-    preprocessor = ColumnTransformer([
-        ('num', StandardScaler(), ['originalPrice','price','discount_percentage','has_free_shipping','is_best_seller']),
-        ('cat', OneHotEncoder(drop='first'), ['price_bucket']),
-        ('text', TfidfVectorizer(max_features=10), 'productTitle')
-    ])
-
-    model = Pipeline([
-        ('preprocessor', preprocessor),
-        ('regressor', RandomForestRegressor())
-    ])
-
-    model.fit(X, y)
-    return model
+PRICE_BUCKET_MAP = {"low": 0, "mid": 1, "medium": 1, "high": 2}
 
 
-def predict(model, input_data):
-    df = pd.DataFrame([input_data])
-    return model.predict(df)[0]
+def build_feature_row(data: dict) -> pd.DataFrame:
+    bucket_raw = str(data.get("price_bucket", "low")).strip().lower()
+    bucket_encoded = PRICE_BUCKET_MAP.get(bucket_raw, 0)
+
+    row = {
+        "originalPrice":       float(data.get("originalPrice", 100)),
+        "price":               float(data.get("price", 50)),
+        "discount_percentage": float(data.get("discount_percentage", 0)),
+        "has_free_shipping":   int(data.get("has_free_shipping", 0)),
+        "is_best_seller":      int(data.get("is_best_seller", 0)),
+        "price_bucket_encoded": bucket_encoded,
+    }
+    return pd.DataFrame([row], columns=FEATURE_COLUMNS)
+
+
+def predict(model, data: dict) -> int:
+    try:
+        X = build_feature_row(data)
+        X = X.replace([np.inf, -np.inf], 0).fillna(0)
+        result = model.predict(X)[0]
+        return int(max(0, round(float(result))))
+    except Exception as e:
+        logger.error("predict() failed — %s", e)
+        return 0
+
+
+def train_model(df: pd.DataFrame):
+    df = df.copy()
+
+    df["price_bucket_encoded"] = (
+        df["price_bucket"].astype(str).str.strip().str.lower()
+        .map(PRICE_BUCKET_MAP).fillna(0).astype(int)
+    )
+
+    X = df[FEATURE_COLUMNS]
+    y = df["sales"]
+
+    clf = RandomForestRegressor(n_estimators=100, random_state=42)
+    clf.fit(X, y)
+
+    with open("model.pkl", "wb") as f:
+        pickle.dump(clf, f)
+
+    logger.info("model.pkl saved.")
+    return clf

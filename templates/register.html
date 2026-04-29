@@ -1,161 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Register</title>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Register — SalesIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
-}
-
-/* Animated Gradient Background */
-body {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(-45deg, #0f0f0f, #1a0000, #330000, #000);
-    background-size: 400% 400%;
-    animation: bgMove 10s ease infinite;
-    overflow: hidden;
-}
-
-@keyframes bgMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Floating Text Background */
-.floating-bg span {
-    position: absolute;
-    font-size: 50px;
-    font-weight: bold;
-    color: rgba(255, 0, 0, 0.15);
-    animation: float 12s ease-in-out infinite;
-}
-
-.floating-bg span:nth-child(1) { top: 10%; left: 10%; }
-.floating-bg span:nth-child(2) { top: 30%; left: 70%; }
-.floating-bg span:nth-child(3) { top: 60%; left: 20%; }
-.floating-bg span:nth-child(4) { top: 80%; left: 60%; }
-.floating-bg span:nth-child(5) { top: 50%; left: 40%; }
-.floating-bg span:nth-child(6) { top: 20%; left: 80%; }
-
-@keyframes float {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-40px); }
-    100% { transform: translateY(0); }
-}
-
-/* Glass Card */
-.card {
-    position: relative;
-    z-index: 2;
-    width: 380px;
-    padding: 30px;
-    border-radius: 20px;
-    backdrop-filter: blur(25px);
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,0,0,0.2);
-    box-shadow: 0 0 40px rgba(255,0,0,0.3);
-    animation: fadeIn 1s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px);}
-    to { opacity: 1;}
-}
-
-h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #fff;
-}
-
-/* Inputs */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: none;
-    outline: none;
-    background: rgba(255,255,255,0.1);
-    color: white;
-    transition: 0.3s;
-}
-
-/* Neon Glow on focus */
-input:focus {
-    box-shadow: 0 0 10px red;
-    background: rgba(255,255,255,0.15);
-}
-
-/* Button */
-button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(45deg, red, #ff1a1a);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px red;
-}
-
-/* Link */
-.link {
-    text-align: center;
-    margin-top: 15px;
-}
-
-a {
-    color: #ff4d4d;
-    text-decoration: none;
-}
+  :root{--red:#ff2d2d;--dark:#080808;--dark3:#161616;--border:rgba(255,45,45,0.18);--text:#f0ede8;--muted:rgba(240,237,232,0.45);}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--dark);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,45,45,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,45,45,0.04) 1px,transparent 1px);background-size:48px 48px;animation:gridShift 20s linear infinite;pointer-events:none;}
+  @keyframes gridShift{from{transform:translate(0,0)}to{transform:translate(48px,48px)}}
+  body::after{content:'';position:fixed;width:400px;height:400px;background:radial-gradient(circle,rgba(255,45,45,0.07) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+  .container{position:relative;z-index:1;width:100%;max-width:460px;animation:fadeUp 0.6s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;text-align:center;margin-bottom:28px;}
+  .logo span{color:var(--red);}
+  .card{background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:36px;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,45,45,0.6),transparent);}
+  .card::after{content:'';position:absolute;top:0;left:0;width:40px;height:2px;background:var(--red);box-shadow:0 0 10px var(--red);}
+  .bracket-v{position:absolute;top:0;left:0;width:2px;height:40px;background:var(--red);box-shadow:0 0 10px var(--red);}
+  .card-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:4px;}
+  .card-sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;}
+  .error-box{background:rgba(255,45,45,0.08);border:1px solid rgba(255,45,45,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#ff6b6b;margin-bottom:20px;}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .field input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:all 0.25s;}
+  .field input:focus{border-color:var(--red);background:rgba(255,45,45,0.04);box-shadow:0 0 0 3px rgba(255,45,45,0.1);}
+  .field input::placeholder{color:rgba(240,237,232,0.2);}
+  .strength-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:8px;overflow:hidden;}
+  .strength-fill{height:100%;border-radius:2px;width:0%;transition:width 0.4s,background 0.4s;}
+  .strength-label{font-size:10px;color:var(--muted);margin-top:4px;}
+  .btn{width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:all 0.3s;}
+  .btn:hover{background:#e02020;box-shadow:0 0 30px rgba(255,45,45,0.4);transform:translateY(-2px);}
+  .login-link{text-align:center;font-size:12px;color:var(--muted);margin-top:20px;}
+  .login-link a{color:var(--red);text-decoration:none;}
 </style>
 </head>
-
 <body>
+<div class="container">
+  <div class="logo">Sales<span>IQ</span></div>
+  <div class="card">
+    <div class="bracket-v"></div>
+    <div class="card-title">Create Account</div>
+    <div class="card-sub">Join the platform</div>
 
-<!-- Floating Words -->
-<div class="floating-bg">
-    <span>REGISTER</span>
-    <span>WELCOME</span>
-    <span>AI</span>
-    <span>DATA</span>
-    <span>SALES</span>
-    <span>FUTURE</span>
-</div>
+    {% if error %}<div class="error-box">⚠ {{ error }}</div>{% endif %}
 
-<!-- Glass Card -->
-<div class="card">
-    <h2>🚀 Create Account</h2>
-
-    <form method="post">
-        <input type="text" name="first_name" placeholder="First Name" required>
-        <input type="text" name="last_name" placeholder="Last Name" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-
-        <button type="submit">Register</button>
+    <form method="POST">
+      <div class="row">
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" name="first_name" placeholder="Satya" required/>
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" name="last_name" placeholder="Sharma" required/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="you@example.com" required/>
+      </div>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="your_username" required/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" id="passInput" placeholder="••••••••" required/>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label" id="strengthLabel"></div>
+      </div>
+      <button type="submit" class="btn">⚡ Create Account</button>
     </form>
 
-    <div class="link">
-        <p>Already have an account? <a href="/login">Login</a></p>
-    </div>
+    <div class="login-link">Already have account? <a href="/login">Sign in</a></div>
+  </div>
 </div>
-
+<script>
+  const p=document.getElementById('passInput'),f=document.getElementById('strengthFill'),l=document.getElementById('strengthLabel');
+  p.addEventListener('input',()=>{
+    const v=p.value;let s=0;
+    if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+    const c=[{w:'0%',col:'transparent',t:''},{w:'25%',col:'#ff2d2d',t:'Weak'},{w:'50%',col:'#ffaa00',t:'Fair'},{w:'75%',col:'#00aaff',t:'Good'},{w:'100%',col:'#00ff88',t:'Strong ✓'}];
+    f.style.width=c[s].w;f.style.background=c[s].col;l.textContent=c[s].t;l.style.color=c[s].col;
+  });
+</script>
 </body>
 </html>

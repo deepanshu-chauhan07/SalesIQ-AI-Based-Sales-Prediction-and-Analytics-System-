@@ -1,159 +1,454 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Upload CSV</title>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Upload CSV — SlesIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
-}
+  :root {
+    --red:   #ff2d2d;
+    --red2:  #ff6b35;
+    --dark:  #080808;
+    --dark3: #161616;
+    --dark4: #1e1e1e;
+    --border: rgba(255,45,45,0.18);
+    --text:  #f0ede8;
+    --muted: rgba(240,237,232,0.45);
+  }
 
-/* Animated background */
-body {
-    height: 100vh;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,45,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,45,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridShift 20s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes gridShift {
+    0%   { transform: translate(0,0); }
+    100% { transform: translate(48px,48px); }
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,45,45,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    pointer-events: none;
+    animation: pulseGlow 5s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+    50%      { opacity: 1;   transform: translate(-50%,-50%) scale(1.2); }
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 520px;
+    padding: 24px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    margin-bottom: 32px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--red); }
+
+  .card {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,45,45,0.6), transparent);
+  }
+
+  /* Corner brackets */
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px; height: 2px;
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+  }
+
+  .bracket-v {
+    position: absolute;
+    top: 0; left: 0;
+    width: 2px; height: 40px;
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .card-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 2px dashed rgba(255,45,45,0.3);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    margin-bottom: 20px;
+    background: rgba(255,45,45,0.02);
+  }
+
+  .drop-zone:hover,
+  .drop-zone.dragover {
+    border-color: var(--red);
+    background: rgba(255,45,45,0.06);
+    box-shadow: 0 0 30px rgba(255,45,45,0.1);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+
+  .drop-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .drop-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .file-name {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #00ff88;
+    display: none;
+    word-break: break-all;
+  }
+
+  /* SUPPORTED FORMATS */
+  .formats {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .fmt-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+  }
+
+  .fmt-tag.active {
+    border-color: rgba(255,45,45,0.4);
+    color: var(--red);
+    background: rgba(255,45,45,0.08);
+  }
+
+  /* SUBMIT BUTTON */
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    text-transform: uppercase;
+  }
+
+  .btn-submit::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    transform: translate(-50%,-50%);
+    transition: width 0.5s, height 0.5s;
+  }
+
+  .btn-submit:hover {
+    background: #e02020;
+    box-shadow: 0 0 30px rgba(255,45,45,0.5);
+    transform: translateY(-2px);
+  }
+
+  .btn-submit:hover::before { width: 300px; height: 300px; }
+
+  .btn-submit:active { transform: translateY(0); }
+
+  /* LOADING STATE */
+  .btn-submit.loading {
+    pointer-events: none;
+    background: #333;
+    color: var(--muted);
+  }
+
+  .btn-submit.loading::after {
+    content: '';
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--muted);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ERROR */
+  .error-box {
+    background: rgba(255,45,45,0.08);
+    border: 1px solid rgba(255,45,45,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #ff6b6b;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* BOTTOM LINKS */
+  .bottom-links {
+    margin-top: 20px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    background: linear-gradient(-45deg, #0f0f0f, #1a0000, #330000, #000);
-    background-size: 400% 400%;
-    animation: bgMove 10s ease infinite;
-    overflow: hidden;
-}
+    gap: 20px;
+  }
 
-@keyframes bgMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Floating words */
-.floating-bg span {
-    position: absolute;
-    font-size: 45px;
-    color: rgba(255,0,0,0.12);
-    animation: float 12s infinite ease-in-out;
-}
-
-@keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-40px); }
-}
-
-/* Glass card */
-.card {
-    position: relative;
-    z-index: 2;
-    width: 420px;
-    padding: 30px;
-    border-radius: 20px;
-    backdrop-filter: blur(25px);
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,0,0,0.2);
-    box-shadow: 0 0 40px rgba(255,0,0,0.3);
-    text-align: center;
-    animation: fadeIn 1s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; }
-}
-
-h2 {
-    color: white;
-    margin-bottom: 20px;
-}
-
-/* Upload box */
-.upload-box {
-    border: 2px dashed rgba(255,0,0,0.4);
-    padding: 30px;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: 0.3s;
-    color: #aaa;
-}
-
-.upload-box:hover {
-    background: rgba(255,0,0,0.1);
-    border-color: red;
-}
-
-/* Hide input */
-input[type="file"] {
-    display: none;
-}
-
-/* Button */
-button {
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(45deg, red, #ff1a1a);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px red;
-}
-
-/* Back link */
-.back {
-    margin-top: 15px;
-}
-
-a {
-    color: #ff4d4d;
+  .bottom-links a {
+    font-size: 11px;
+    color: var(--muted);
     text-decoration: none;
-}
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
 
-/* Floating words positions */
-.floating-bg span:nth-child(1){ top:10%; left:10%; }
-.floating-bg span:nth-child(2){ top:30%; left:70%; }
-.floating-bg span:nth-child(3){ top:60%; left:20%; }
-.floating-bg span:nth-child(4){ top:80%; left:60%; }
+  .bottom-links a:hover { color: var(--red); }
 
+  /* INFO CHIPS */
+  .info-strip {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .info-chip {
+    flex: 1;
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+  }
+
+  .info-chip strong {
+    display: block;
+    font-size: 14px;
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    font-weight: 700;
+  }
 </style>
 </head>
-
 <body>
 
-<!-- Floating background -->
-<div class="floating-bg">
-    <span>UPLOAD</span>
-    <span>DATA</span>
-    <span>AI</span>
-    <span>PREDICT</span>
-</div>
+<div class="container">
+  <div class="logo">Sales<span>IQ</span></div>
 
-<!-- Card -->
-<div class="card">
-    <h2>📂 Upload CSV File</h2>
+  <div class="card">
+    <div class="bracket-v"></div>
 
-    <form method="post" enctype="multipart/form-data">
+    <div class="card-title">Upload Dataset</div>
+    <div class="card-sub">AI Sales Prediction Engine</div>
 
-        <label class="upload-box">
-             Click to select CSV file
-            <input type="file" name="file" required>
-        </label>
+    {% if error %}
+    <div class="error-box">
+      ⚠ {{ error }}
+    </div>
+    {% endif %}
 
-        <button type="submit">Upload & Predict 🚀</button>
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" name="file" id="fileInput" accept=".csv"/>
+        <span class="drop-icon">📂</span>
+        <div class="drop-title">Drop your CSV file here</div>
+        <div class="drop-sub">or click to browse</div>
+        <div class="file-name" id="fileName"></div>
+      </div>
+
+      <div class="formats">
+        <span class="fmt-tag active">CSV</span>
+        <span class="fmt-tag">Any Column Names</span>
+        <span class="fmt-tag">Auto-Detected</span>
+        <span class="fmt-tag">Any Size</span>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">
+        ⚡ Run AI Prediction
+      </button>
 
     </form>
 
-    <div class="back">
-        <a href="/home">⬅ Back</a>
+    <div class="info-strip">
+      <div class="info-chip">
+        <strong>AUTO</strong>
+        Column Detection
+      </div>
+      <div class="info-chip">
+        <strong>ML</strong>
+        Random Forest
+      </div>
+      <div class="info-chip">
+        <strong>FAST</strong>
+        Real-time Results
+      </div>
     </div>
+
+  </div>
+
+  <div class="bottom-links">
+    <a href="/history">📁 History</a>
+    <a href="/home">🏠 Home</a>
+    <a href="/logout">⏻ Logout</a>
+  </div>
 </div>
 
+<script>
+  const dropZone  = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const fileName  = document.getElementById('fileName');
+  const submitBtn = document.getElementById('submitBtn');
+  const form      = document.getElementById('uploadForm');
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) {
+      fileName.style.display = 'block';
+      fileName.textContent = '✓ ' + fileInput.files[0].name;
+      dropZone.style.borderColor = '#00ff88';
+      dropZone.style.background  = 'rgba(0,255,136,0.04)';
+    }
+  });
+
+  // Drag & Drop
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.csv')) {
+      fileInput.files = e.dataTransfer.files;
+      fileName.style.display = 'block';
+      fileName.textContent = '✓ ' + file.name;
+      dropZone.style.borderColor = '#00ff88';
+    } else {
+      fileName.style.display = 'block';
+      fileName.textContent = '✗ Sirf CSV file allowed hai';
+      fileName.style.color = '#ff2d2d';
+    }
+  });
+
+  // Loading state on submit
+  form.addEventListener('submit', () => {
+    if (fileInput.files[0]) {
+      submitBtn.classList.add('loading');
+      submitBtn.textContent = 'Processing';
+    }
+  });
+</script>
 </body>
 </html>
